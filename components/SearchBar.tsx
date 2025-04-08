@@ -1,14 +1,15 @@
 'use client';
 
 import styled from 'styled-components';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 const SearchBarWarp = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 30px;
-  gap: 20px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  gap: 10px;
 `;
 
 const SearchBarInput = styled.input`
@@ -27,11 +28,13 @@ const SearchBarBtn = styled.button`
 `;
 
 export default function SearchBar() {
+  const [value, setValue] = useState('');
   const searchInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
+    setValue(e.target.value);
   };
   const searchBtnClick = () => {
     console.log('click');
+    console.log(value);
   };
   return (
     <SearchBarWarp>
@@ -40,7 +43,7 @@ export default function SearchBar() {
         onChange={searchInputChange}
         placeholder="링크를 입력해주세요"
       />
-      <SearchBarBtn onClick={searchBtnClick}>버튼</SearchBarBtn>
+      <SearchBarBtn onClick={searchBtnClick}>검색</SearchBarBtn>
     </SearchBarWarp>
   );
 }

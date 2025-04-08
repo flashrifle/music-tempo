@@ -79,6 +79,13 @@ export default function MetronomeContainer() {
 
   return (
     <MetronomeWrap>
+      <input
+        type="range"
+        value={bpm}
+        min={20}
+        max={280}
+        onChange={(e) => setBpm(Number(e.target.value))}
+      />
       <Display>{bpm} BPM</Display>
       <Controls>
         <Button onClick={() => setBpm((prev) => Math.max(30, prev - 1))}>
