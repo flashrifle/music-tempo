@@ -99,7 +99,7 @@ export default function MetronomeContainer() {
     if (lastTap) {
       const diff = now - lastTap;
       const newBpm = Math.round(60000 / diff);
-      setBpm(newBpm);
+      setBpm(Math.min(newBpm, 280)); // 최대 BPM 280 제한
     }
     setLastTap(now);
   };
