@@ -16,12 +16,12 @@ const BeatCounterWrap = styled.div`
   gap: 10px;
 `;
 
-const BeatCounter = styled.div<{ active: boolean }>`
+const BeatCounter = styled.div<{ $active: boolean }>`
   border: solid 1px green;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: ${({ active }) => (active ? 'green' : 'transparent')};
+  background: ${({ $active }) => ($active ? 'green' : 'transparent')};
   transition: background 0.2s;
 `;
 
@@ -72,6 +72,10 @@ export default function MetronomeContainer() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    setActiveBeat(0);
+  }, [bpm]);
+
+  useEffect(() => {
     if (isPlaying) {
       if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -104,7 +108,7 @@ export default function MetronomeContainer() {
     <MetronomeWrap>
       <BeatCounterWrap>
         {[0, 1, 2, 3].map((i) => (
-          <BeatCounter key={i} active={i === activeBeat} />
+          <BeatCounter key={i} $active={i === activeBeat} />
         ))}
       </BeatCounterWrap>
       <Display>{bpm} BPM</Display>
