@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 const MetronomeWrap = styled.div`
@@ -11,10 +11,28 @@ const MetronomeWrap = styled.div`
   gap: 20px;
 `;
 
+const BeatCounterWrap = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const BeatCounter = styled.div<{ active: boolean }>`
+  border: solid 1px green;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: ${({ active }) => (active ? 'green' : 'transparent')};
+  transition: background 0.2s;
+`;
+
+const BeatRange = styled.input`
+  width: 80%;
+`;
+
 const Display = styled.div`
   font-size: 3rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  transform: translateY(3px);
 `;
 
 const Controls = styled.div`
@@ -50,22 +68,27 @@ export default function MetronomeContainer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [lastTap, setLastTap] = useState(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [activeBeat, setActiveBeat] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // useEffect(() => {
-  //     if (isPlaying) {
-  //         if (intervalId) clearInterval(intervalId);
-  //         const newInterval = setInterval(() => {
-  //             metronomeClick.currentTime = 0;
-  //             metronomeClick.play();
-  //         }, (60 / bpm) * 1000);
-  //         setIntervalId(newInterval);
-  //     } else {
-  //         if (intervalId) clearInterval(intervalId);
-  //     }
-  //     return () => {
-  //         if (intervalId) clearInterval(intervalId);
-  //     };
-  // }, [isPlaying, bpm]);
+  useEffect(() => {
+    if (isPlaying) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
+      intervalRef.current = setInterval(
+        () => {
+          setActiveBeat((prev) => (prev + 1) % 4); // 3개의 비트
+        },
+        (60 / bpm) * 1000,
+      );
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, bpm]);
 
   const handleTap = () => {
     const now = Date.now();
@@ -79,14 +102,19 @@ export default function MetronomeContainer() {
 
   return (
     <MetronomeWrap>
-      <input
+      <BeatCounterWrap>
+        {[0, 1, 2, 3].map((i) => (
+          <BeatCounter key={i} active={i === activeBeat} />
+        ))}
+      </BeatCounterWrap>
+      <Display>{bpm} BPM</Display>
+      <BeatRange
         type="range"
         value={bpm}
         min={20}
         max={280}
         onChange={(e) => setBpm(Number(e.target.value))}
       />
-      <Display>{bpm} BPM</Display>
       <Controls>
         <Button onClick={() => setBpm((prev) => Math.max(30, prev - 1))}>
           -
