@@ -74,70 +74,111 @@ export default function MetronomeContainer() {
   const [bpm, setBpm] = useState(60);
   const [isPlaying, setIsPlaying] = useState(false);
   const [lastTap, setLastTap] = useState(0);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-  const [activeBeat, setActiveBeat] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentBeat, setCurrentBeat] = useState(0);
+  const [beatsPerMeasure, setBeatsPerMeasure] = useState(4);
+
+  const timer = useRef<NodeJS.Timeout | null>(null);
+  const click1 = useRef<HTMLAudioElement | null>(null);
+  const click2 = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    setActiveBeat(0);
-  }, [bpm]);
+    click1.current = new Audio('/sounds/click1.wav');
+    click2.current = new Audio('/sounds/click2.wav');
+  }, []);
+
+  const playClick = (beat: number) => {
+    if (beat === 0) {
+      click1.current?.play(); // 첫 박자
+    } else {
+      click2.current?.play(); // 나머지 박자
+    }
+    setCurrentBeat(beat);
+  };
 
   useEffect(() => {
     if (isPlaying) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      let beat = 0;
+      playClick(beat); // 첫 클릭
 
-      intervalRef.current = setInterval(
+      timer.current = setInterval(
         () => {
-          setActiveBeat((prev) => (prev + 1) % 4); // 3개의 비트
+          beat = (beat + 1) % beatsPerMeasure;
+          playClick(beat);
         },
         (60 / bpm) * 1000,
       );
     } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timer.current) clearInterval(timer.current);
     }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timer.current) clearInterval(timer.current);
     };
-  }, [isPlaying, bpm]);
+  }, [isPlaying, bpm, beatsPerMeasure]);
 
   const handleTap = () => {
     const now = Date.now();
     if (lastTap) {
       const diff = now - lastTap;
       const newBpm = Math.round(60000 / diff);
-      setBpm(Math.min(newBpm, 280)); // 최대 BPM 280 제한
+      setBpm(Math.min(newBpm, 280));
     }
     setLastTap(now);
+  };
+
+  const handleBeatsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setBeatsPerMeasure(Number(e.target.value));
+    setCurrentBeat(0);
+  };
+
+  const handleSetBeat = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const text = (e.target as HTMLButtonElement).textContent;
+    setBpm((prev) =>
+      text === '-' ? Math.max(20, prev - 1) : Math.min(280, prev + 1),
+    );
+    // currentBeat 유지됨
   };
 
   return (
     <MetronomeWrap>
       <BeatCounterWrap>
-        {[0, 1, 2, 3].map((i) => (
-          <BeatCounter key={i} $active={i === activeBeat} />
+        {Array.from({ length: beatsPerMeasure }).map((_, i) => (
+          <BeatCounter key={i} $active={i === currentBeat} />
         ))}
       </BeatCounterWrap>
       <Display>{bpm} BPM</Display>
       <BeatRange
         type="range"
-        value={bpm}
         min={20}
         max={280}
+        value={bpm}
         onChange={(e) => setBpm(Number(e.target.value))}
       />
       <Controls>
-        <Button onClick={() => setBpm((prev) => Math.max(30, prev - 1))}>
-          -
-        </Button>
-        <Button onClick={() => setIsPlaying(!isPlaying)}>
+        <Button onClick={handleSetBeat}>-</Button>
+        <Button
+          onClick={() => {
+            setIsPlaying((prev) => !prev);
+            setCurrentBeat(0);
+          }}
+        >
           {isPlaying ? 'Stop' : 'Start'}
         </Button>
-        <Button onClick={() => setBpm((prev) => Math.min(300, prev + 1))}>
-          +
-        </Button>
+        <Button onClick={handleSetBeat}>+</Button>
+        <TapButton onClick={handleTap}>Tap Tempo</TapButton>
       </Controls>
-      <TapButton onClick={handleTap}>Tap Tempo</TapButton>
+      <Controls>
+        <label>
+          박자 수:{' '}
+          <Selector value={beatsPerMeasure} onChange={handleBeatsChange}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </Selector>
+        </label>
+      </Controls>
     </MetronomeWrap>
   );
 }
