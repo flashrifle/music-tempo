@@ -7,8 +7,8 @@ const MetronomeWrap = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
   gap: 20px;
+  width: 100%;
 `;
 
 const BeatCounterWrap = styled.div`
@@ -17,16 +17,12 @@ const BeatCounterWrap = styled.div`
 `;
 
 const BeatCounter = styled.div<{ $active: boolean }>`
-  border: solid 1px green;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: ${({ $active }) => ($active ? 'green' : 'transparent')};
-  transition: background 0.2s;
-`;
-
-const BeatRange = styled.input`
-  width: 80%;
+  border: 1px solid green;
+  background-color: ${({ $active }) => ($active ? 'green' : 'transparent')};
+  transition: background-color 0.2s;
 `;
 
 const Display = styled.div`
@@ -35,9 +31,15 @@ const Display = styled.div`
   transform: translateY(3px);
 `;
 
+const BeatRange = styled.input`
+  width: 80%;
+`;
+
 const Controls = styled.div`
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 `;
 
 const Button = styled.button`
@@ -61,6 +63,11 @@ const TapButton = styled(Button)`
   &:hover {
     background: #218838;
   }
+`;
+
+const Selector = styled.select`
+  padding: 5px 10px;
+  font-size: 1rem;
 `;
 
 export default function MetronomeContainer() {
